@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TaxFlow Ledger — สมุดสรุปภาษีหัก ณ ที่จ่าย (50 ทวิ) · Flowacc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Google Fonts: CSS ถูกสร้างแบบ dynamic ต่อ browser/UA (รายการ @font-face ต่างกัน) จึงไม่สามารถตรึง SRI hash เดียวให้ครบทุกเบราว์เซอร์ได้ — ใส่ crossorigin ไว้ ส่วนไฟล์ฟอนต์จริงมาจาก fonts.gstatic.com -->
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" crossorigin="anonymous" />
+<!-- pdf.js (อ่านไฟล์ในเครื่องเท่านั้น ไม่ส่งข้อมูลออกเน็ต) — ตรึงเวอร์ชัน 3.11.174 + SRI (sha512) กันไฟล์ถูกแก้ระหว่างทาง -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+        integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+  :root{
+    /* ===== แบรนด์ Flowacc — น้ำเงิน-เขียวเชื่อมั่น ===== */
+    --navy-900:#0b2545;  --navy-800:#13315c;  --navy-700:#1c4a7e;
+    --blue-600:#1d6fb8;  --blue-500:#2a86d6;
+    --teal-600:#0f9d8f;  --teal-500:#14b8a6;  --teal-50:#e6f7f4;
+    --green-600:#16a34a; --green-50:#e9f9ef;
+    --amber-600:#d97706; --amber-500:#f59e0b; --amber-100:#fde9c8; --amber-50:#fff6e9;
+    --red-600:#dc2626;   --red-50:#fdeaea;
+
+    --ink:#0f2440;       --ink-soft:#41577a;  --muted:#7b8aa3;
+    --line:#e2e9f2;      --line-strong:#cdd9e8;
+    --bg:#eef3f9;        --surface:#ffffff;   --surface-2:#f7fafd;  --stripe:#f4f8fc;
+
+    /* spacing scale (4px base) */
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px;
+
+    --shadow-sm:0 1px 2px rgba(15,36,64,.06), 0 1px 3px rgba(15,36,64,.05);
+    --shadow-md:0 6px 20px rgba(15,36,64,.09);
+    --shadow-lg:0 18px 50px rgba(15,36,64,.18);
+    --radius:14px; --radius-sm:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Sarabun',system-ui,-apple-system,'Segoe UI',sans-serif;
+    background:
+      radial-gradient(1200px 500px at 82% -12%, rgba(20,184,166,.10), transparent 60%),
+      radial-gradient(900px 460px at -5% 0%, rgba(29,111,184,.10), transparent 55%),
+      var(--bg);
+    color:var(--ink); line-height:1.55; -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+
+  /* ===== Header ===== */
+  header.app{
+    background:linear-gradient(120deg, var(--navy-900), var(--navy-700) 60%, var(--blue-600));
+    color:#fff; padding:16px 0 14px; box-shadow:var(--shadow-md);
+    position:sticky; top:0; z-index:60;
+  }
+  .wrap{max-width:1500px;margin:0 auto;padding:0 22px;}
+  .head-row{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;}
+  .logo{
+    display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:12px;
+    background:linear-gradient(135deg,var(--teal-500),var(--blue-500));
+    box-shadow:0 6px 16px rgba(20,184,166,.35);flex:0 0 auto;
+  }
+  .logo svg{width:26px;height:26px;}
+  .brand h1{font-size:21px;font-weight:700;margin:0;letter-spacing:.2px;}
+  .brand p{margin:1px 0 0;font-size:12.5px;color:#bcd4ee;font-weight:400;}
+  .head-spacer{flex:1 1 auto;}
+  .privacy-pill{
+    display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.22);color:#dff3ee;font-size:12.5px;font-weight:500;
+    padding:7px 13px;border-radius:999px;backdrop-filter:blur(4px);
+  }
+  .privacy-pill svg{width:15px;height:15px;}
+
+  main{padding:var(--s6) 0 80px;}
+
+  /* ===== Summary bar ===== */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  @media (max-width:820px){.stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+  }
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;}
+  .stat.s-docs::before{background:var(--blue-500);}
+  .stat.s-income::before{background:var(--teal-500);}
+  .stat.s-tax::before{background:var(--navy-700);}
+  .stat.s-warn::before{background:var(--amber-500);}
+  .stat .lbl{font-size:12px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px;}
+  .stat .lbl svg{width:14px;height:14px;}
+  .stat .val{font-size:24px;font-weight:700;color:var(--navy-800);margin-top:3px;line-height:1.2;}
+  .stat .val small{font-size:13px;color:var(--muted);font-weight:500;}
+  .stat.s-warn .val{color:var(--amber-600);}
+
+  /* ===== Dropzone (compact, ribbon over table) ===== */
+  .dropzone{
+    border:2px dashed var(--line-strong);border-radius:var(--radius);
+    background:linear-gradient(180deg,var(--surface-2),#fff);
+    padding:16px 20px;cursor:pointer;transition:.18s ease;margin-bottom:16px;
+    display:flex;align-items:center;gap:16px;
+  }
+  .dropzone:hover{border-color:var(--blue-500);background:var(--teal-50);}
+  .dropzone.drag{border-color:var(--teal-500);background:var(--teal-50);box-shadow:inset 0 0 0 3px rgba(20,184,166,.18);transform:scale(1.005);}
+  .drop-ico{
+    width:52px;height:52px;flex:0 0 auto;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,rgba(42,134,214,.12),rgba(20,184,166,.16));color:var(--blue-600);
+  }
+  .drop-ico svg{width:28px;height:28px;}
+  .drop-txt{flex:1;min-width:0;}
+  .drop-txt h3{margin:0 0 2px;font-size:16px;color:var(--navy-800);font-weight:600;}
+  .drop-txt p{margin:0;font-size:13px;color:var(--muted);}
+  .btn-pick{
+    display:inline-flex;align-items:center;gap:8px;background:var(--blue-600);color:#fff;border:none;
+    padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+    box-shadow:var(--shadow-sm);transition:.15s;flex:0 0 auto;
+  }
+  .btn-pick:hover{background:var(--navy-700);}
+  .btn-pick svg{width:16px;height:16px;}
+
+  /* ===== Toolbar ===== */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .toolbar h2{margin:0;font-size:18px;font-weight:700;color:var(--navy-800);display:flex;align-items:center;gap:9px;}
+  .toolbar h2 svg{width:20px;height:20px;color:var(--teal-600);}
+  .tb-spacer{flex:1;}
+  .search{
+    position:relative;display:flex;align-items:center;
+  }
+  .search svg{position:absolute;left:11px;width:16px;height:16px;color:var(--muted);pointer-events:none;}
+  .search input{
+    font-family:inherit;font-size:13.5px;color:var(--ink);
+    border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px 8px 34px;width:230px;
+    background:#fff;transition:.15s;
+  }
+  .search input:focus{outline:none;border-color:var(--blue-500);box-shadow:0 0 0 3px rgba(42,134,214,.15);}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-strong);background:#fff;color:var(--ink-soft);
+    padding:8px 13px;border-radius:9px;font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{border-color:var(--blue-500);color:var(--blue-600);background:var(--surface-2);}
+  .btn svg{width:15px;height:15px;}
+  .btn.primary{background:var(--teal-600);border-color:var(--teal-600);color:#fff;}
+  .btn.primary:hover{background:var(--teal-500);color:#fff;}
+  .btn.print{background:var(--navy-700);border-color:var(--navy-700);color:#fff;}
+  .btn.print:hover{background:var(--navy-800);color:#fff;}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--muted);}
+  .btn.ghost:hover{color:var(--red-600);background:var(--red-50);}
+  .btn.toggle.on{background:var(--amber-50);border-color:var(--amber-500);color:var(--amber-600);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  /* ===== Table — ตารางคือพระเอก ===== */
+  .table-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;}
+  .table-scroll{overflow:auto;max-width:100%;max-height:calc(100vh - 250px);}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px;min-width:1320px;table-layout:fixed;}
+  thead th{
+    background:var(--navy-800);color:#dbe7f6;font-weight:600;font-size:12px;text-align:left;
+    padding:10px 10px;position:sticky;top:0;z-index:5;white-space:normal;line-height:1.3;letter-spacing:.2px;
+    border-bottom:2px solid var(--navy-900);vertical-align:middle;
+  }
+  thead th.num{text-align:right;}
+  thead th.sortable{cursor:pointer;user-select:none;transition:.12s;}
+  thead th.sortable:hover{background:var(--navy-700);color:#fff;}
+  thead th .arrow{display:inline-block;width:0;opacity:0;margin-left:4px;transition:.12s;font-size:10px;}
+  thead th.sorted .arrow{width:auto;opacity:1;}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;}
+  tbody tr:nth-child(even){background:var(--stripe);}
+  tbody tr:hover{background:var(--teal-50);}
+  td.num{text-align:right;}
+  .idx{color:var(--muted);font-size:12px;text-align:center;}
+
+  td .cell{
+    min-width:0;outline:none;border-radius:6px;padding:4px 7px;margin:-4px -7px;transition:.12s;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;   /* บรรทัดเดียว เกินแล้วตัดท้ายด้วย … */
+  }
+  /* ตอนคลิกแก้ไข: คลี่ข้อความเต็ม (เลื่อนแนวนอนได้) ไม่ตัด … */
+  td .cell[contenteditable="true"]:focus{white-space:nowrap;overflow-x:auto;text-overflow:clip;}
+  td .cell[contenteditable="true"]:hover{background:rgba(42,134,214,.07);box-shadow:inset 0 0 0 1px var(--line-strong);}
+  td .cell[contenteditable="true"]:focus{background:#fff;box-shadow:inset 0 0 0 2px var(--blue-500);}
+  td.num .cell{text-align:right;}
+  .tax-id-cell{letter-spacing:.5px;}
+  /* ===== ไฮไลต์ช่องที่ระบบเดาไม่ได้/ข้อมูลไม่ครบ — สีส้มชัดเจน ===== */
+  td.miss{background:var(--amber-50)!important;box-shadow:inset 3px 0 0 var(--amber-500);}
+  td.miss .cell{color:var(--amber-600);}
+  td.miss .cell:empty::before{content:"ต้องกรอก";color:var(--amber-500);font-size:12px;opacity:.7;font-style:italic;}
+  td.miss .cell.mono:empty::before{font-family:'Sarabun',sans-serif;}
+
+  /* income type badge select */
+  .badge-sel{font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;border:none;cursor:pointer;max-width:100%;width:100%;}
+  .ty-1{background:#e3effb;color:#1558a8;} .ty-2{background:#e6f7f4;color:#0c7d72;}
+  .ty-3{background:#f0ecfb;color:#6b3fc0;} .ty-4{background:#fdeef0;color:#c0344f;}
+  .ty-5{background:#fff1e0;color:#b9690a;} .ty-6{background:#e9f6e9;color:#2f8a3d;}
+  .ty-7{background:#e7f3f6;color:#1d7e94;} .ty-8{background:#eef1f5;color:#4a5b73;}
+  .ty-0{background:#fff6e9;color:var(--amber-600);box-shadow:inset 0 0 0 1px var(--amber-500);}
+
+  .src-file{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);max-width:150px;}
+  .src-file svg{width:13px;height:13px;flex:0 0 auto;color:var(--red-600);}
+  .src-file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .row-flag{cursor:pointer;border:none;background:none;padding:0;display:inline-flex;}
+  .row-flag svg{width:18px;height:18px;}
+  .del-row{border:none;background:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:inline-flex;}
+  .del-row:hover{color:var(--red-600);background:var(--red-50);}
+  .del-row svg{width:15px;height:15px;}
+
+  tfoot td{background:var(--surface-2);border-top:2px solid var(--line-strong);font-weight:700;padding:12px;color:var(--navy-800);position:sticky;bottom:0;}
+  tfoot td.num{font-size:14.5px;}
+
+  /* ===== Empty state ===== */
+  .empty{text-align:center;padding:56px 24px;color:var(--muted);}
+  .empty .e-ico{
+    width:110px;height:110px;margin:0 auto 16px;border-radius:28px;
+    background:linear-gradient(135deg,rgba(42,134,214,.10),rgba(20,184,166,.14));
+    display:flex;align-items:center;justify-content:center;position:relative;
+  }
+  .empty .e-ico svg{width:60px;height:60px;color:var(--blue-500);}
+  .empty .e-ico::after{content:"";position:absolute;inset:0;border-radius:28px;box-shadow:0 0 0 0 rgba(20,184,166,.4);animation:pulse 2.4s ease-out infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(20,184,166,.30);}70%{box-shadow:0 0 0 22px rgba(20,184,166,0);}100%{box-shadow:0 0 0 0 rgba(20,184,166,0);}}
+  .empty h3{color:var(--navy-800);font-size:18px;margin:0 0 6px;font-weight:600;}
+  .empty p{margin:0 auto;max-width:440px;font-size:14px;line-height:1.6;}
+  .no-match{padding:40px;text-align:center;color:var(--muted);font-size:14px;}
+
+  /* ===== Flag modal ===== */
+  .modal-bg{position:fixed;inset:0;background:rgba(11,37,69,.45);backdrop-filter:blur(2px);z-index:80;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;border-radius:16px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden;animation:slideIn .25s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .modal-head{padding:16px 20px;background:var(--amber-50);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+  .modal-head svg{width:22px;height:22px;color:var(--amber-500);}
+  .modal-head h3{margin:0;font-size:16px;color:var(--navy-800);}
+  .modal-body{padding:18px 20px;}
+  .modal-body ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .modal-body li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--ink-soft);}
+  .modal-body li svg{width:16px;height:16px;color:var(--red-600);flex:0 0 auto;margin-top:2px;}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--line);text-align:right;}
+  .modal-foot.row{display:flex;gap:10px;justify-content:flex-end;}
+  .modal-head.danger{background:var(--red-50);}
+  .modal-head.danger svg{color:var(--red-600);}
+  .modal-msg{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.65;}
+  .modal-msg b{color:var(--navy-800);}
+  .btn.danger{background:var(--red-600);border-color:var(--red-600);color:#fff;}
+  .btn.danger:hover{background:#b91c1c;border-color:#b91c1c;color:#fff;}
+
+  /* ===== ปุ่ม "รายละเอียด" คอลัมน์ไฟล์ต้นทาง ===== */
+  .btn-detail{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);background:#fff;color:var(--blue-600);padding:5px 12px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .btn-detail:hover{background:var(--teal-50);border-color:var(--blue-500);color:var(--navy-700);}
+  .btn-detail svg{width:14px;height:14px;flex:0 0 auto;color:var(--red-600);}
+
+  /* ===== PDF preview popup (เรนเดอร์ในเครื่องด้วย pdf.js) ===== */
+  .src-file.clickable{cursor:pointer;user-select:none;}
+  .src-file.clickable:hover{color:var(--blue-600);}
+  .src-file.clickable:hover svg{color:var(--blue-600);}
+  .pv-bg{position:fixed;inset:0;background:rgba(11,37,69,.62);backdrop-filter:blur(3px);z-index:100;display:none;flex-direction:column;}
+  .pv-bg.show{display:flex;}
+  .pv-head{display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--navy-800);color:#fff;box-shadow:var(--shadow-md);flex:0 0 auto;}
+  .pv-name{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;}
+  .pv-name svg{width:18px;height:18px;flex:0 0 auto;color:#ff7a7a;}
+  .pv-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pv-ctrl{display:flex;align-items:center;gap:6px;flex:0 0 auto;}
+  .pv-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:34px;height:34px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.10);color:#fff;border-radius:9px;cursor:pointer;font-size:16px;font-family:inherit;transition:.15s;}
+  .pv-btn:hover{background:rgba(255,255,255,.22);}
+  .pv-btn.wide{width:auto;padding:0 12px;font-size:13px;font-weight:600;}
+  .pv-btn.close{background:rgba(220,38,38,.85);border-color:transparent;}
+  .pv-btn.close:hover{background:#dc2626;}
+  .pv-btn svg{width:17px;height:17px;}
+  .pv-zoom{min-width:52px;text-align:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .pv-body{flex:1 1 auto;overflow:auto;padding:22px;background:#566377;}
+  .pv-pages{display:flex;flex-direction:column;align-items:center;gap:16px;min-width:min-content;margin:0 auto;}
+  .pv-canvas{box-shadow:0 8px 28px rgba(0,0,0,.45);background:#fff;border-radius:2px;}
+  .pv-loading{color:#fff;font-size:14px;opacity:.9;padding:40px;}
+
+  /* ===== Toast ===== */
+  .toast-wrap{position:fixed;bottom:22px;right:22px;z-index:90;display:flex;flex-direction:column;gap:10px;}
+  .toast{background:var(--navy-800);color:#fff;padding:12px 16px;border-radius:11px;font-size:13.5px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;animation:slideIn .25s ease;max-width:330px;}
+  .toast svg{width:18px;height:18px;flex:0 0 auto;}
+  .toast.ok svg{color:var(--teal-500);} .toast.warn svg{color:var(--amber-500);}
+
+  .footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.6;}
+  .hidden{display:none!important;}
+
+  /* ===== Print sheet (A4 landscape — บังคับพอดี 1 หน้าทุกกรณี) =====
+     ความหนาแน่นปรับอัตโนมัติด้วย density class (.d0–.d4) ที่เซ็ตจาก JS ตามจำนวนแถว
+     ขับทุกขนาดผ่านตัวแปร --rpad / --rfs / --sgap เพื่อย่อแถว+ระยะลงเมื่อรายการเยอะ */
+  #printSheet{display:none;
+    --rpad:5px;   /* ระยะ padding ในเซลล์ตาราง */
+    --rfs:10px;   /* ขนาดฟอนต์แถวตาราง */
+    --sgap:42px;  /* ระยะเหนือบล็อกลายเซ็น */
+    --sline:34px; /* ความสูงเส้นลายเซ็น */
+    --hmb:14px;   /* margin ใต้หัวกระดาษ */
+    --tmb:10px;   /* margin ใต้ชื่อรายงาน */
+  }
+  #printSheet.d1{--rpad:3.4px;--rfs:8.6px;--sgap:26px;--sline:26px;--hmb:11px;--tmb:8px;}
+  #printSheet.d2{--rpad:2.6px;--rfs:7.7px;--sgap:20px;--sline:22px;--hmb:9px;--tmb:6px;}
+  #printSheet.d3{--rpad:2px;--rfs:7px;--sgap:15px;--sline:18px;--hmb:8px;--tmb:5px;}
+  #printSheet.d4{--rpad:1.4px;--rfs:6.3px;--sgap:11px;--sline:14px;--hmb:6px;--tmb:4px;}
+  @media print{
+    @page{size:A4 landscape;margin:10mm 12mm;}
+    html,body{height:auto;}
+    body{background:#fff!important;}
+    body>*{display:none!important;}
+    #printSheet{display:block!important;color:#000;font-size:var(--rfs);}
+    .ps-head{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2.5px solid #0b2545;padding-bottom:8px;margin-bottom:var(--hmb);}
+    .ps-brand{display:flex;align-items:center;gap:10px;}
+    .ps-logo{width:38px;height:38px;border-radius:9px;background:#13315c;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .ps-co h2{margin:0;font-size:14px;color:#0b2545;}
+    .ps-co p{margin:1px 0 0;font-size:10.5px;color:#41577a;}
+    .ps-meta{text-align:right;font-size:10px;color:#41577a;}
+    .ps-meta b{color:#0b2545;font-size:11.5px;}
+    .ps-title{text-align:center;font-size:13px;font-weight:700;color:#0b2545;margin:0 0 var(--tmb);}
+    table.ps-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:var(--rfs);}
+    table.ps-table th,table.ps-table td{word-break:break-word;overflow-wrap:anywhere;}
+    table.ps-table th{background:#13315c!important;color:#fff!important;padding:calc(var(--rpad) + 1px) 6px;text-align:left;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    table.ps-table th.num{text-align:right;}
+    table.ps-table td{padding:var(--rpad) 6px;border-bottom:1px solid #cdd9e8;}
+    table.ps-table th.num,table.ps-table td.num{text-align:right;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;}
+    table.ps-table td.num{font-family:'IBM Plex Mono',monospace;}
+    table.ps-table tr:nth-child(even) td{background:#f4f8fc;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    table.ps-table tfoot td{font-weight:700;border-top:2px solid #13315c;background:#eef3f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .ps-sign{display:flex;justify-content:space-between;margin-top:var(--sgap);gap:36px;}
+    .ps-sign div{flex:1;text-align:center;}
+    .ps-sign .line{border-top:1px dotted #41577a;margin-top:var(--sline);padding-top:5px;font-size:10px;color:#41577a;}
+    .ps-foot{margin-top:14px;font-size:8.5px;color:#7b8aa3;text-align:center;border-top:1px solid #e2e9f2;padding-top:7px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="wrap head-row">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="rgba(255,255,255,.18)"/><path d="M14 4v5h5" stroke="#fff" stroke-width="1.6"/><path d="M7 13h7M7 16.5h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.5" cy="15.5" r="3" stroke="#fff" stroke-width="1.6"/><path d="M15.2 15.5l.9.9 1.6-1.7" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="brand">
+      <h1>TaxFlow Ledger</h1>
+      <p>สมุดสรุปหนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ) — ตารางคือพระเอก · Flowacc</p>
+    </div>
+    <div class="head-spacer"></div>
+    <div class="privacy-pill">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      ประมวลผลในเครื่อง 100% · ไม่ส่งข้อมูลออกเน็ต
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===== Summary bar (คำนวณสด) ===== -->
+  <div class="stats">
+    <div class="stat s-docs">
+      <div class="lbl"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h9l4 4v14H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> เอกสารทั้งหมด</div>
+      <div class="val" id="stDocs">0 <small>ใบ</small></div>
+    </div>
+    <div class="stat s-income">
+      <div class="lbl">ยอดเงินได้รวม (บาท)</div>
+      <div class="val mono" id="stIncome">0.00</div>
+    </div>
+    <div class="stat s-tax">
+      <div class="lbl">ภาษีหัก ณ ที่จ่ายรวม (บาท)</div>
+      <div class="val mono" id="stTax">0.00</div>
+    </div>
+    <div class="stat s-warn">
+      <div class="lbl"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> ต้องตรวจสอบ</div>
+      <div class="val" id="stWarn">0 <small>ใบ</small></div>
+    </div>
+  </div>
+
+  <!-- ===== Dropzone ===== -->
+  <div id="dropzone" class="dropzone">
+    <div class="drop-ico">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <div class="drop-txt">
+      <h3>ลากวางปึก PDF 50 ทวิ ลงที่นี่</h3>
+      <p>แต่ละไฟล์จะเด้งเป็นแถวในตารางทันที — ระบบแกะข้อมูลอัตโนมัติ ช่องที่อ่านไม่ครบจะไฮไลต์สีส้มให้ตรวจ</p>
+    </div>
+    <button type="button" class="btn-pick" id="pickBtn">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      เลือกไฟล์
+    </button>
+    <input type="file" id="fileInput" accept="application/pdf" multiple class="hidden" />
+  </div>
+
+  <!-- ===== Toolbar ===== -->
+  <div class="toolbar">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 5h18M3 10h18M3 15h18M3 20h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      สมุดรายการภาษีหัก ณ ที่จ่าย
+    </h2>
+    <div class="tb-spacer"></div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.7"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="ค้นหา ผู้จ่าย / เลขภาษี / ไฟล์…" />
+    </div>
+    <button class="btn toggle" id="filterIncompleteBtn" title="แสดงเฉพาะแถวที่ข้อมูลไม่ครบ">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      เฉพาะที่ต้องตรวจ
+    </button>
+    <button class="btn primary" id="csvBtn" disabled>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      Export Excel
+    </button>
+    <button class="btn print" id="pdfBtn" disabled>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M7 8V3h10v5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><rect x="5" y="8" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.7"/><path d="M7 16h10v5H7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      Export PDF สรุป
+    </button>
+    <button class="btn ghost" id="clearBtn" disabled>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m1 0v12a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      ล้างทั้งหมด
+    </button>
+  </div>
+
+  <!-- ===== Table card ===== -->
+  <div class="table-card">
+    <div id="emptyState" class="empty">
+      <div class="e-ico">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 13h4l2 3h6l2-3h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 13V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7" stroke="currentColor" stroke-width="1.6"/><path d="M3 13v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.6"/></svg>
+      </div>
+      <h3>สมุดยังว่างอยู่</h3>
+      <p>ลากปึกไฟล์ PDF หนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ) มาวางด้านบน — แต่ละใบจะกลายเป็นแถวในสมุดนี้ทันที โดยข้อมูลไม่ออกจากเครื่องของคุณ</p>
+    </div>
+
+    <div id="tableWrap" class="table-scroll hidden">
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th style="width:42px;text-align:center;">สถานะ</th>
+            <th style="width:34px;text-align:center;">#</th>
+            <th class="sortable" data-sort="docNo" style="width:130px;">เลขที่เอกสาร <span class="arrow"></span></th>
+            <th class="sortable" data-sort="date" style="width:98px;">วันที่ <span class="arrow"></span></th>
+            <th class="sortable" data-sort="payer" style="width:14.5%;">ผู้จ่ายเงิน (ผู้หักภาษี) <span class="arrow"></span></th>
+            <th class="sortable" data-sort="taxId" style="width:130px;">เลขผู้เสียภาษี <span class="arrow"></span></th>
+            <th class="sortable" data-sort="payee" style="width:18%;">ผู้ถูกหักภาษี ณ ที่จ่าย <span class="arrow"></span></th>
+            <th class="sortable" data-sort="incomeType" style="width:118px;">ประเภทเงินได้ <span class="arrow"></span></th>
+            <th class="sortable num" data-sort="income" style="width:116px;">ยอดเงิน <span class="arrow"></span></th>
+            <th class="sortable num" data-sort="tax" style="width:106px;">ภาษีหัก <span class="arrow"></span></th>
+            <th style="width:112px;text-align:center;">ไฟล์ต้นทาง</th>
+            <th style="width:44px;"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8" style="text-align:right;">รวมทั้งสิ้น</td>
+            <td class="num mono" id="footIncome">0.00</td>
+            <td class="num mono" id="footTax">0.00</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div id="noMatch" class="no-match hidden">ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา/กรอง</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    TaxFlow Ledger · เครื่องมือสรุปหนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ) สำหรับบุคคลทั่วไป — ประมวลผลฝั่งเบราว์เซอร์ทั้งหมด ข้อมูลภาษีไม่ถูกส่งออกสู่อินเทอร์เน็ต<br/>
+    โปรดตรวจทานข้อมูลที่แกะอัตโนมัติทุกครั้งก่อนนำไปยื่นจริง
+  </div>
+</main>
+
+<!-- flag modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <h3>รายการที่ต้องตรวจสอบ</h3>
+    </div>
+    <div class="modal-body"><ul id="flagList"></ul></div>
+    <div class="modal-foot"><button class="btn primary" id="modalClose">เข้าใจแล้ว</button></div>
+  </div>
+</div>
+
+<!-- confirm modal (ใช้ซ้ำได้) -->
+<div class="modal-bg" id="confirmBg">
+  <div class="modal">
+    <div class="modal-head" id="confirmHead">
+      <svg id="confirmIcon" viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <h3 id="confirmTitle">ยืนยัน</h3>
+    </div>
+    <div class="modal-body"><p class="modal-msg" id="confirmMsg"></p></div>
+    <div class="modal-foot row">
+      <button class="btn" id="confirmCancel">ยกเลิก</button>
+      <button class="btn primary" id="confirmOk">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF preview popup -->
+<div class="pv-bg" id="pvModal">
+  <div class="pv-head">
+    <div class="pv-name">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M6 3h7l5 5v13H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 3v5h5" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span id="pvTitle"></span>
+    </div>
+    <div class="pv-ctrl">
+      <button class="pv-btn" id="pvZoomOut" title="ซูมออก">−</button>
+      <div class="pv-zoom" id="pvZoom">100%</div>
+      <button class="pv-btn" id="pvZoomIn" title="ซูมเข้า">+</button>
+      <button class="pv-btn wide" id="pvFit" title="พอดีความกว้าง">พอดีหน้า</button>
+      <button class="pv-btn close" id="pvClose" title="ปิด (Esc)">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="pv-body" id="pvBody"><div class="pv-pages" id="pvPages"></div></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ===== Print sheet (A4) ===== -->
+<div id="printSheet"></div>
+
+<script>
+/* =========================================================================
+   TaxFlow Ledger — ประมวลผลในเบราว์เซอร์ทั้งหมด (ไม่มีการส่งข้อมูลออก)
+   ========================================================================= */
+/* ตั้งค่า pdf.js worker พร้อมตรวจ SRI:
+   worker โหลดผ่าน workerSrc (สตริง URL) ใส่ attribute integrity ตรงๆ ไม่ได้
+   จึง fetch ไฟล์พร้อม integrity (sha512) ให้เบราว์เซอร์ตรวจ hash แล้วแปลงเป็น blob URL
+   ถ้า hash ไม่ตรง/โหลดไม่ได้ → fallback ไป URL ตรง (แอปยังทำงาน แต่ log เตือน) */
+const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const PDFJS_WORKER_SRI = 'sha512-BbrZ76UNZq5BhH7LL7pn9A4TKQpQeNCHOo65/akfelcIBbcVvYWOFQKPXIrykE3qZxYjmDX573oa4Ywsc7rpTw==';
+const workerReady = (async ()=>{
+  if(!window.pdfjsLib) return;
+  try{
+    const res = await fetch(PDFJS_WORKER_URL, {integrity: PDFJS_WORKER_SRI, mode:'cors', referrerPolicy:'no-referrer'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const blob = await res.blob();                 // เบราว์เซอร์ตรวจ SRI แล้วก่อนถึงตรงนี้
+    pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+  }catch(err){
+    console.warn('โหลด worker แบบตรวจ SRI ไม่สำเร็จ, ใช้ URL ตรงแทน:', err);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+  }
+})();
+
+const INCOME_TYPES = {
+  '1':'เงินเดือน ค่าจ้าง 40(1)',
+  '2':'ค่าบริการ/รับจ้าง/นายหน้า 40(2)',
+  '3':'ค่าลิขสิทธิ์/สิทธิ 40(3)',
+  '4':'ดอกเบี้ย/เงินปันผล 40(4)',
+  '5':'ค่าเช่า 40(5)',
+  '6':'วิชาชีพอิสระ 40(6)',
+  '7':'รับเหมา 40(7)',
+  '8':'อื่นๆ/บริการ 40(8)',
+};
+const REPORT_BRAND = 'TaxFlow Ledger';   // เครื่องมือทั่วไปสำหรับบุคคลทั่วไป — ไม่ผูกกับบริษัทใด
+
+let RECORDS = [];
+let SEQ = 0;
+let SORT = { key:null, dir:1 };   // dir 1=asc, -1=desc
+let SEARCH = '';
+let INCOMPLETE_ONLY = false;
+
+/* ---------- helpers ---------- */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const fmt = n => (isFinite(n)?Number(n):0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const xlText = s => { const v=String(s==null?'':s).replace(/"/g,''); return v?'="'+v+'"':''; };
+function thaiDigits(s){const m={'๐':'0','๑':'1','๒':'2','๓':'3','๔':'4','๕':'5','๖':'6','๗':'7','๘':'8','๙':'9'};return String(s).replace(/[๐-๙]/g,d=>m[d]);}
+
+/* =========================================================================
+   อ่านข้อความจาก PDF ด้วย pdf.js (ทำงานในเครื่องทั้งหมด ไม่ส่งข้อมูลออก)
+   จัดกลุ่ม text item เป็นบรรทัดตามตำแหน่ง y เพื่อรักษาโครงสร้างฟอร์ม
+   ========================================================================= */
+async function extractText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  let lines = [];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    const rows = {};
+    tc.items.forEach(it=>{
+      if(!it.str) return;
+      const y = Math.round(it.transform[5]);
+      (rows[y] = rows[y] || []).push({x:it.transform[4], s:it.str});
+    });
+    Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
+      const line = rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join(' ').replace(/\s+/g,' ').trim();
+      if(line) lines.push(line);
+    });
+  }
+  return {text: thaiDigits(lines.join('\n')), flat: thaiDigits(lines.join(' '))};
+}
+
+/* ===== ตัวช่วยแกะค่าตาม label ของฟอร์ม "หนังสือรับรองการหักภาษี ณ ที่จ่าย (50 ทวิ)" ===== */
+// ดึงตัวเลขเงิน (รองรับ comma คั่นหลักพันและ/หรือทศนิยม) — สร้าง regex ใหม่ทุกครั้ง กัน lastIndex ค้าง
+function moneyNums(str){
+  const re = /\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+\.\d{2}/g;
+  const out = []; let m;
+  while((m = re.exec(str))) out.push(parseFloat(m[0].replace(/,/g,'')));
+  return out;
+}
+// ค้นเลขประจำตัวผู้เสียภาษี 13 หลัก (ยอมตัวคั่น space/dash ระหว่างหลักได้) คืน [{id,index}] ตามตำแหน่ง
+function findTaxIdCandidates(flat){
+  const re = /\d(?:[\s\-]{0,2}\d){12,}/g;
+  const res = []; let m;
+  while((m = re.exec(flat))){
+    const d = m[0].replace(/\D/g,'');
+    if(d.length >= 13) res.push({id: d.slice(0,13), index: m.index});
+  }
+  return res;
+}
+// ดึงตัวเลขเงินที่อยู่ถัดจาก label ที่กำหนด (label-anchored)
+function numsAfterLabel(flat, re, win){
+  const m = flat.match(re);
+  if(!m) return [];
+  const start = m.index + m[0].length;
+  return moneyNums(flat.slice(start, start + (win || 90)));
+}
+// คำนำหน้าชื่อบุคคล/นิติบุคคล — ใช้ยึดจุดเริ่มต้นของชื่อจริง
+const NAME_TITLE = /(บริษัท|ห้างหุ้นส่วนจำกัด|ห้างหุ้นส่วนสามัญ|บจก\.?|หจก\.?|หสน\.?|บมจ\.?|ห้าง|ร้าน|มูลนิธิ|สมาคม|สหกรณ์|กองทุน|องค์การ|โรงเรียน|มหาวิทยาลัย|วัด|นางสาว|น\.ส\.|นาง|นาย|ด\.ช\.|ด\.ญ\.|เด็กชาย|เด็กหญิง|คุณ)/;
+// วลี boilerplate หัวฟอร์ม 50 ทวิ — ตัดทิ้งก่อนค้นหาชื่อ/anchor
+const BOILERPLATE_RE = /\([^)]*?(สำหรับ|ใช้แนบ|แบบแสดงรายการ|มาตรา|ประมวลรัษฎากร|ลำดับที่|ฉบับที่|ภ\.?ง\.?ด|เก็บไว้|หลักฐาน)[^)]*\)|หนังสือรับรองการหักภาษี\s*ณ\s*ที่จ่าย|หนังสือรับรองการหักภาษี|ใช้แนบพร้อมกับแบบแสดงรายการภาษี|ตามมาตรา\s*50\s*ทวิ|มาตรา\s*3\s*เตรส|แห่งประมวลรัษฎากร|แบบแสดงรายการภาษีเงินได้\S*|แบบแสดงรายการภาษี|แบบแสดงรายการ|กรมสรรพากร|สำหรับผู้ถูกหักภาษี\s*ณ\s*ที่จ่าย|สำหรับผู้มีเงินได้|สำหรับคนต่างด้าว|เก็บไว้เป็นหลักฐาน|ลำดับที่\s*\d*|ฉบับที่\s*\d*|ภ\.?ง\.?ด\.?\s*\d*/g;
+function stripBoilerplate(s){ return String(s==null?'':s).replace(BOILERPLATE_RE, ' ').replace(/\s+/g, ' '); }
+// ทำความสะอาดชื่อ: ตัดวงเล็บอธิบายฟอร์ม/วลี boilerplate/label/เลข ให้เหลือเฉพาะชื่อจริง
+function cleanName(s){
+  if(!s) return '';
+  s = String(s).replace(/\([^)]*?(ใช้แนบ|แบบแสดงรายการ|มาตรา|ประมวลรัษฎากร|สำหรับ|ลำดับที่|ฉบับที่|ภ\.?ง\.?ด)[^)]*\)/g, ' ');
+  s = stripBoilerplate(s);
+  const t = s.match(NAME_TITLE);
+  if(t){ s = s.slice(s.indexOf(t[0])); }
+  else { const sh = s.search(/ชื่อ\s*[:：]?\s*/); if(sh >= 0) s = s.slice(sh).replace(/^ชื่อ\s*[:：]?\s*/, ' '); }
+  s = s.replace(/(ผู้มีหน้าที่หักภาษี|ผู้ถูกหักภาษี|ผู้มีเงินได้|ผู้จ่ายเงิน|ผู้รับเงิน|เลขประจ\S*|ที่อยู่|เลขที่|ตำบล|แขวง|อำเภอ|เขต|จังหวัด|รหัสไปรษณีย์|ประเภทเงินได้)[\s\S]*$/, ' ');
+  s = s.replace(/\s*ณ\s*ที่จ่าย/g, ' ').replace(/^\s*ชื่อ\s*/, ' ').replace(/[:：]/g, ' ');
+  s = s.replace(/\s+ชื่อ[\s\S]*$/, ' ');                 // ตัด label "ชื่อ ........" ของช่องถัดไปบนฟอร์ม
+  s = s.replace(/[.…_]{3,}[\s\S]*$/, ' ');           // ตัดจุดไข่ปลา/เส้นประสำหรับกรอก เป็นต้นไป
+  s = s.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+  s = s.replace(/\s\d{2,}[\s\S]*$/, ' ');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s.length >= 2 ? s : '';
+}
+// ดึงชื่อถัดจาก label บน flat แล้วทำความสะอาด (จำกัดอยู่ใน section เดียว)
+function extractName(flat, labelRe){
+  const clean = stripBoilerplate(flat);
+  const m = clean.match(labelRe);
+  if(!m) return '';
+  const start = m.index + m[0].length;
+  const win = clean.slice(start, start + 220)
+    .split(/ผู้มีหน้าที่หักภาษี|ผู้ถูกหักภาษี\s*ณ\s*ที่จ่าย|ผู้รับเงิน|ผู้จ่ายเงิน/)[0];
+  return cleanName(win);
+}
+
+/* =========================================================================
+   แกะฟิลด์จากฟอร์ม 50 ทวิ (heuristic ยึด label ภาษาไทยของฟอร์มราชการ)
+   ========================================================================= */
+function parseFields(text, flat){
+  const out = {docNo:'', payer:'', payee:'', taxId:'', incomeType:'', income:null, tax:null, date:''};
+
+  /* --- เลขที่เอกสาร (เช่น WT202505060001) — ยึด label "เลขที่" ก่อน แล้วค่อย fallback ทั้งเอกสาร --- */
+  let docNo = '';
+  let dm0 = flat.match(/เลขที่(?:เอกสาร|หนังสือ(?:รับรอง)?|อ้างอิง|ใบ\S*)?\s*[:：]?\s*([A-Za-z]{1,5}[-\/]?\d{6,18})/);
+  if(dm0){ docNo = dm0[1]; }
+  if(!docNo){
+    const gm = flat.match(/\b([A-Za-z]{2,5}\d{8,18})\b/);
+    if(gm) docNo = gm[1];
+  }
+  out.docNo = docNo.replace(/[-\/]/g,'').toUpperCase();
+
+  /* --- ผู้จ่ายเงิน = "ผู้มีหน้าที่หักภาษี ณ ที่จ่าย" --- */
+  out.payer = extractName(flat, /ผู้มีหน้าที่หักภาษี[\s\S]{0,8}ที่จ่าย|ผู้จ่ายเงิน|ชื่อผู้จ่าย/);
+
+  /* --- ผู้ถูกหักภาษี ณ ที่จ่าย = "ผู้มีเงินได้" (เช่น นาง อัมพวัน อนุรักษ์ชลนที (สำนักงานใหญ่)) --- */
+  out.payee = extractName(flat, /ผู้ถูกหักภาษี[\s\S]{0,8}ที่จ่าย|ผู้มีเงินได้|ชื่อผู้มีเงินได้|ผู้รับเงิน/);
+
+  /* --- เลขประจำตัวผู้เสียภาษี 13 หลัก: ผูกกับ section ผู้จ่าย vs ผู้ถูกหัก ตามตำแหน่งใน flat --- */
+  const cands = findTaxIdCandidates(flat);
+  const pPayer = flat.search(/ผู้มีหน้าที่หักภาษี|ผู้จ่ายเงิน|ชื่อผู้จ่าย/);
+  const pPayee = flat.search(/ผู้ถูกหักภาษี|ผู้มีเงินได้|ชื่อผู้มีเงินได้|ผู้รับเงิน/);
+  const firstIn = (lo, hi) => { const c = cands.find(c=> c.index>=lo && (hi<0 || c.index<hi)); return c ? c.id : ''; };
+  let payerId = '', payeeId = '';
+  if(pPayer >= 0 && pPayee > pPayer){ payerId = firstIn(pPayer, pPayee); payeeId = firstIn(pPayee, -1); }
+  else if(pPayee >= 0 && pPayer > pPayee){ payeeId = firstIn(pPayee, pPayer); payerId = firstIn(pPayer, -1); }
+  else { payerId = cands[0] ? cands[0].id : ''; payeeId = cands[1] ? cands[1].id : ''; }
+  // คอลัมน์ "เลขผู้เสียภาษี" แสดงของผู้มีหน้าที่หักภาษี (ผู้จ่าย) — เก็บเป็น string คงเลข 0 นำหน้า
+  out.taxId = String(payerId || payeeId || '');
+
+  /* --- ประเภทเงินได้ ---
+     ฟอร์ม 50 ทวิ พิมพ์รายการ 40(1)–40(8) ไว้ครบทุกประเภทเป็น template เสมอ
+     การจับ 40(x) หรือคีย์เวิร์ด ("เงินเดือน/ค่าจ้าง" อยู่หัวฟอร์ม) จึงมักได้ 40(1) ผิดทุกครั้ง
+     เพราะแยกไม่ออกว่าช่องไหนถูกติ๊ก/กรอกจริงจากข้อความล้วน
+     → ตั้งค่าพื้นฐานคงที่เป็น "รับเหมา 40(7)" ให้ผู้ใช้ปรับเองรายแถวเมื่อจำเป็น */
+  out.incomeType = '7';
+
+  /* --- จำนวนเงินที่จ่าย / ภาษีที่หักและนำส่ง — ยึด label จริง ไม่เดาจาก max/min ทั้งเอกสาร --- */
+  let income = null, tax = null;
+  let n = numsAfterLabel(flat, /รวมเงินที่จ่าย|รวมทั้งสิ้น|รวมเป็นเงิน/, 90);
+  if(n.length >= 2){ income = n[0]; tax = n[1]; }
+  if(income == null){
+    n = numsAfterLabel(flat, /ภาษีที่หัก[\s\S]{0,6}นำส่ง|ภาษีที่หักและนำส่ง|ภาษีที่หัก/, 90);
+    if(n.length >= 2){ income = n[0]; tax = n[1]; }
+  }
+  if(income == null){
+    n = numsAfterLabel(flat, /จำนวนเงินที่จ่าย|เงินที่จ่าย/, 60);
+    if(n.length){
+      income = n[0];
+      const tn = numsAfterLabel(flat, /ภาษีที่หัก[\s\S]{0,12}นำส่ง|ภาษีหัก\s*ณ\s*ที่จ่าย|ภาษีที่หัก/, 60);
+      if(tn.length) tax = tn[0];
+    }
+  }
+  if(income == null){
+    const all = moneyNums(flat);
+    if(all.length === 2){ income = Math.max(all[0], all[1]); tax = Math.min(all[0], all[1]); }
+  }
+  // กันลำดับสลับ: ภาษีที่หักต้องไม่เกินยอดเงินได้
+  if(income != null && tax != null && tax > income){ const t = income; income = tax; tax = t; }
+  out.income = income; out.tax = tax;
+
+  /* --- วันที่: dd/mm/yyyy หรือ dd เดือนไทย ปี --- */
+  let dm = flat.match(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{2,4})/);
+  if(dm){ out.date = `${dm[1].padStart(2,'0')}/${dm[2].padStart(2,'0')}/${dm[3]}`; }
+  else {
+    const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const mr = flat.match(new RegExp('(\\d{1,2})\\s*('+months.join('|')+')\\s*(?:พ\\.?ศ\\.?\\s*)?(\\d{4})'));
+    if(mr){ const mi = months.indexOf(mr[2])+1; out.date = `${mr[1].padStart(2,'0')}/${String(mi).padStart(2,'0')}/${mr[3]}`; }
+  }
+  return out;
+}
+
+// แถวเปล่า (ค่า default ประเภทเงินได้ = "รับเหมา 40(7)") สำหรับ degrade เมื่อแกะไม่ได้
+function blankRecord(fileName){
+  return {uid:'r'+(++SEQ), fileName, file:null, docNo:'', payer:'', payee:'', taxId:'', incomeType:'7', income:null, tax:null, date:'', flags:[]};
+}
+
+/* ตรวจสอบความครบถ้วน → flags + เซ็ตชุด field ที่ขาด */
+function validate(rec){
+  const flags=[]; const miss=new Set();
+  if(!rec.payer){ flags.push('ไม่พบชื่อผู้จ่ายเงิน'); miss.add('payer'); }
+  if(!rec.payee){ flags.push('ไม่พบชื่อผู้ถูกหักภาษี'); miss.add('payee'); }
+  if(!rec.taxId){ flags.push('ไม่พบเลขประจำตัวผู้เสียภาษี'); miss.add('taxId'); }
+  else if(String(rec.taxId).replace(/\D/g,'').length!==13){ flags.push('เลขผู้เสียภาษีไม่ครบ 13 หลัก'); miss.add('taxId'); }
+  if(!rec.incomeType){ flags.push('ระบุประเภทเงินได้ไม่ได้'); miss.add('incomeType'); }
+  if(rec.income==null || !(rec.income>0)){ flags.push('อ่านยอดเงินได้ไม่ได้'); miss.add('income'); }
+  if(rec.tax==null){ flags.push('อ่านยอดภาษีที่หักไม่ได้'); miss.add('tax'); }
+  if(rec.income>0 && rec.tax!=null){
+    if(rec.tax>rec.income){ flags.push('ยอดภาษีมากกว่ายอดเงินได้ (ผิดปกติ)'); miss.add('tax'); }
+    else if(rec.tax>0 && rec.tax/rec.income>0.35){ flags.push('อัตราภาษีสูงผิดปกติ (>35%)'); miss.add('tax'); }
+  }
+  if(!rec.date){ flags.push('อ่านวันที่ไม่ได้'); miss.add('date'); }
+  rec.flags=flags; rec.miss=miss;
+  return flags;
+}
+
+/* =========================================================================
+   จัดการไฟล์เข้า — อ่าน PDF ด้วย pdf.js แล้วแกะข้อมูลจริงจากฟอร์ม 50 ทวิ
+   ฟิลด์ที่แกะไม่ได้ → ปล่อยว่าง (ไฮไลต์สีส้มให้แก้ inline) ไม่ crash
+   ========================================================================= */
+async function handleFiles(fileList){
+  const files = Array.from(fileList).filter(f=>/pdf$/i.test(f.name)||f.type==='application/pdf');
+  if(!files.length){ toast('warn','รองรับเฉพาะไฟล์ PDF (หนังสือรับรองหัก ณ ที่จ่าย 50 ทวิ)'); return; }
+  await workerReady;   // ให้ worker (ตรวจ SRI แล้ว) พร้อมก่อนเริ่มอ่าน PDF
+  // ===== ตรวจซ้ำด้วย "เลขที่เอกสาร" (docNo เช่น WT202506070003) =====
+  // เอกสารที่เลขที่ซ้ำ (มีอยู่ในสมุดแล้ว หรือซ้ำภายในปึกเดียวกัน) → ข้ามทุกกรณี
+  // ไม่ว่าจะอัปโหลดทีละไฟล์หรือเป็นปึก ห้ามเพิ่มเอกสารซ้ำเด็ดขาด
+  const docKey = v => String(v||'').trim().toUpperCase();
+  const seenDocNos = new Set(RECORDS.map(r=>docKey(r.docNo)).filter(Boolean));
+  let added=0, scanned=0, failed=0;
+  const dupSkipped=[];
+  for(const file of files){
+    const rec = blankRecord(file.name);
+    rec.file = file;   // เก็บไฟล์ต้นฉบับไว้เปิดดูใน popup (ดับเบิลคลิกที่คอลัมน์ไฟล์ต้นทาง)
+    try{
+      if(!window.pdfjsLib) throw new Error('pdf.js ไม่พร้อมใช้งาน (CDN โหลดไม่สำเร็จ)');
+      const {text, flat} = await extractText(file);
+      if(!text || text.replace(/\s/g,'').length < 20){
+        // PDF ไม่มีข้อความที่อ่านได้ (อาจเป็นภาพสแกน) → ปล่อยว่างให้กรอกเอง
+        scanned++;
+      } else {
+        Object.assign(rec, parseFields(text, flat));
+      }
+    }catch(err){
+      console.error('แกะไฟล์ไม่สำเร็จ:', file.name, err);
+      failed++; // degrade นุ่มนวล: คงแถวว่างไว้ให้กรอก ไม่ทำให้ทั้งหน้าล่ม
+    }
+    if(!rec.incomeType) rec.incomeType = '7'; // คงค่า default "รับเหมา 40(7)"
+    // --- ตรวจเลขที่เอกสารซ้ำ (เฉพาะกรณีแกะ docNo ได้) → ซ้ำเมื่อไหร่ ข้ามทันที ---
+    const dn = docKey(rec.docNo);
+    if(dn && seenDocNos.has(dn)){ dupSkipped.push(rec.docNo); continue; }  // ซ้ำ: ข้ามไฟล์นี้เสมอ
+    if(dn) seenDocNos.add(dn);   // กันซ้ำภายในปึกชุดเดียวกันด้วย
+    validate(rec);
+    RECORDS.push(rec);
+    added++;
+  }
+  renderAll();
+  const warnN = RECORDS.filter(r=>r.flags.length).length;
+  let msg = `อ่าน ${added} ไฟล์แล้ว`;
+  if(scanned) msg += ` · ${scanned} ไฟล์ไม่มีข้อความ (อาจเป็นภาพสแกน)`;
+  if(failed)  msg += ` · ${failed} ไฟล์เปิดไม่สำเร็จ`;
+  if(warnN)   msg += ` · ${warnN} ใบต้องตรวจสอบ`;
+  toast((warnN||scanned||failed||dupSkipped.length)?'warn':'ok', msg);
+  // แจ้งเตือนเรื่องเลขที่เอกสารซ้ำ — ถูกข้ามทั้งหมด ไม่อนุญาตให้อัปโหลดซ้ำ
+  if(dupSkipped.length) toast('warn', `ข้าม ${dupSkipped.length} ไฟล์ เลขที่เอกสารซ้ำ (มีในสมุดแล้ว): ${dupSkipped.join(', ')}`);
+}
+
+/* =========================================================================
+   มุมมองตาราง (ค้นหา + กรอง + จัดเรียง)
+   ========================================================================= */
+function getView(){
+  let view = RECORDS.slice();
+  if(SEARCH){
+    const q = SEARCH.toLowerCase();
+    view = view.filter(r=>{
+      const hay = [r.docNo, r.payer, r.payee, r.taxId, r.fileName, r.date,
+        (r.incomeType?('40('+r.incomeType+') '+(INCOME_TYPES[r.incomeType]||'')):'')].join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  if(INCOMPLETE_ONLY) view = view.filter(r=>r.flags && r.flags.length);
+  if(SORT.key){
+    const k = SORT.key, d = SORT.dir;
+    view.sort((a,b)=>{
+      let va=a[k], vb=b[k];
+      if(k==='income'||k==='tax'){ va=va==null?-Infinity:va; vb=vb==null?-Infinity:vb; return (va-vb)*d; }
+      if(k==='date'){ va=dateKey(a.date); vb=dateKey(b.date); return (va-vb)*d; }
+      return String(va||'').localeCompare(String(vb||''),'th')*d;
+    });
+  }
+  return view;
+}
+function dateKey(s){
+  const m=String(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if(!m) return -Infinity;
+  return Number(m[3])*10000 + Number(m[2])*100 + Number(m[1]);
+}
+
+/* =========================================================================
+   เรนเดอร์
+   ========================================================================= */
+function renderAll(){
+  const has = RECORDS.length>0;
+  $('#emptyState').classList.toggle('hidden', has);
+  $('#tableWrap').classList.toggle('hidden', !has);
+  ['csvBtn','pdfBtn','clearBtn'].forEach(b=>$('#'+b).disabled=!has);
+
+  const view = getView();
+  const tb = $('#tbody'); tb.innerHTML='';
+
+  view.forEach((r,i)=>{
+    const hasFlag = r.flags && r.flags.length;
+    const ty = r.incomeType || '7';   // ค่าพื้นฐาน: รับเหมา 40(7)
+    const tr = document.createElement('tr');
+    tr.dataset.uid = r.uid;
+    const md = f => r.miss && r.miss.has(f) ? ' miss' : '';
+    tr.innerHTML = `
+      <td style="text-align:center;">${hasFlag
+        ? `<button class="row-flag" title="ดูสิ่งที่ต้องตรวจ" data-flag="${r.uid}"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round" fill="#fff6e9"/><path d="M12 9v4M12 16h.01" stroke="#d97706" stroke-width="1.8" stroke-linecap="round"/></svg></button>`
+        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><circle cx="12" cy="12" r="9" stroke="#16a34a" stroke-width="1.6"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`}</td>
+      <td class="idx">${i+1}</td>
+      <td class="${md('docNo')}"><div class="cell mono" contenteditable="true" data-f="docNo">${esc(r.docNo)}</div></td>
+      <td class="${md('date')}"><div class="cell mono" contenteditable="true" data-f="date">${esc(r.date)}</div></td>
+      <td class="${md('payer')}"><div class="cell" contenteditable="true" data-f="payer" title="${esc(r.payer)}">${esc(r.payer)}</div></td>
+      <td class="${md('taxId')}"><div class="cell tax-id-cell mono" contenteditable="true" data-f="taxId">${esc(r.taxId)}</div></td>
+      <td class="${md('payee')}"><div class="cell" contenteditable="true" data-f="payee" title="${esc(r.payee)}">${esc(r.payee)}</div></td>
+      <td class="${md('incomeType')}">
+        <select class="badge-sel ty-${ty}" data-f="incomeType">${typeOptions(ty)}</select>
+      </td>
+      <td class="num ${md('income')}"><div class="cell mono" contenteditable="true" data-f="income">${r.income!=null?fmt(r.income):''}</div></td>
+      <td class="num ${md('tax')}"><div class="cell mono" contenteditable="true" data-f="tax">${r.tax!=null?fmt(r.tax):''}</div></td>
+      <td style="text-align:center;">${r.file
+        ? `<button class="btn-detail" data-preview="${r.uid}" title="${esc(r.fileName)}"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h7l5 5v13H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 3v5h5" stroke="currentColor" stroke-width="1.6"/></svg>รายละเอียด</button>`
+        : `<span class="src-file" title="${esc(r.fileName)}"><span>${esc(r.fileName)||'—'}</span></span>`}</td>
+      <td style="text-align:center;"><button class="del-row" title="ลบแถวนี้" data-del="${r.uid}"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2m-8 0v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></td>`;
+    tb.appendChild(tr);
+  });
+
+  $('#noMatch').classList.toggle('hidden', !(has && view.length===0));
+
+  // ===== Summary (จากข้อมูลทั้งหมด คำนวณสด) =====
+  let sumI=0,sumT=0,warn=0;
+  RECORDS.forEach(r=>{ if(r.income)sumI+=Number(r.income)||0; if(r.tax)sumT+=Number(r.tax)||0; if(r.flags&&r.flags.length)warn++; });
+  // footer สะท้อนเฉพาะแถวที่แสดง (หลังกรอง)
+  let vI=0,vT=0; view.forEach(r=>{ if(r.income)vI+=Number(r.income)||0; if(r.tax)vT+=Number(r.tax)||0; });
+  $('#footIncome').textContent = fmt(vI);
+  $('#footTax').textContent = fmt(vT);
+  $('#stDocs').innerHTML = `${RECORDS.length} <small>ใบ</small>`;
+  $('#stIncome').textContent = fmt(sumI);
+  $('#stTax').textContent = fmt(sumT);
+  $('#stWarn').innerHTML = `${warn} <small>ใบ</small>`;
+
+  updateSortHeaders();
+  bindCellEvents();
+}
+
+function typeOptions(sel){
+  if(!sel || sel==='0') sel='7';   // ค่าพื้นฐาน: รับเหมา 40(7)
+  let html = `<option value="">— ไม่ระบุ —</option>`;
+  Object.keys(INCOME_TYPES).forEach(k=>{ html+=`<option value="${k}" ${k===sel?'selected':''}>${INCOME_TYPES[k]}</option>`; });
+  return html;
+}
+
+function updateSortHeaders(){
+  $$('#resultTable thead th.sortable').forEach(th=>{
+    const active = th.dataset.sort===SORT.key;
+    th.classList.toggle('sorted', active);
+    const a = th.querySelector('.arrow');
+    if(a) a.textContent = active ? (SORT.dir===1?'▲':'▼') : '';
+  });
+}
+
+/* =========================================================================
+   แก้ไข inline
+   ========================================================================= */
+function bindCellEvents(){
+  $$('#tbody .cell').forEach(cell=>{
+    cell.onblur = ()=>{
+      const tr = cell.closest('tr');
+      const rec = RECORDS.find(r=>r.uid===tr.dataset.uid); if(!rec) return;
+      const f = cell.dataset.f; let v = cell.textContent.trim();
+      if(f==='income'||f==='tax'){
+        const num = parseFloat(thaiDigits(v).replace(/[^\d.\-]/g,''));
+        rec[f] = isNaN(num)?null:num;
+      } else if(f==='taxId'){
+        rec[f] = thaiDigits(v).replace(/\s/g,'');
+      } else { rec[f]=v; }
+      validate(rec); renderAll();
+    };
+    cell.onkeydown = e=>{ if(e.key==='Enter'){ e.preventDefault(); cell.blur(); } };
+  });
+  $$('#tbody select[data-f="incomeType"]').forEach(sel=>{
+    sel.onchange = ()=>{
+      const tr=sel.closest('tr'); const rec=RECORDS.find(r=>r.uid===tr.dataset.uid); if(!rec)return;
+      rec.incomeType=sel.value; validate(rec); renderAll();
+    };
+  });
+  $$('#tbody [data-del]').forEach(btn=>{
+    btn.onclick = ()=>{ RECORDS=RECORDS.filter(r=>r.uid!==btn.dataset.del); renderAll(); toast('ok','ลบแถวแล้ว'); };
+  });
+  $$('#tbody [data-flag]').forEach(btn=>{
+    btn.onclick = ()=>{ const rec=RECORDS.find(r=>r.uid===btn.dataset.flag); if(rec) showFlags(rec); };
+  });
+  $$('#tbody [data-preview]').forEach(el=>{
+    el.onclick = ()=>{ const rec=RECORDS.find(r=>r.uid===el.dataset.preview); if(rec) openPdfPreview(rec); };
+  });
+}
+
+/* ===== sort headers ===== */
+$$('#resultTable thead th.sortable').forEach(th=>{
+  th.onclick = ()=>{
+    const k = th.dataset.sort;
+    if(SORT.key===k) SORT.dir*=-1; else { SORT.key=k; SORT.dir = (k==='income'||k==='tax')?-1:1; }
+    renderAll();
+  };
+});
+
+/* ===== search + filter ===== */
+$('#searchInput').oninput = e=>{ SEARCH=e.target.value.trim(); renderAll(); };
+$('#filterIncompleteBtn').onclick = ()=>{
+  INCOMPLETE_ONLY=!INCOMPLETE_ONLY;
+  $('#filterIncompleteBtn').classList.toggle('on', INCOMPLETE_ONLY);
+  renderAll();
+};
+
+/* ===== flag modal ===== */
+function showFlags(rec){
+  const ul=$('#flagList'); ul.innerHTML='';
+  (rec.flags||[]).forEach(f=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>${esc(f)}</span>`;
+    ul.appendChild(li);
+  });
+  $('#modalBg').classList.add('show');
+}
+$('#modalClose').onclick=()=>$('#modalBg').classList.remove('show');
+$('#modalBg').onclick=e=>{ if(e.target===$('#modalBg')) $('#modalBg').classList.remove('show'); };
+
+/* ===== confirm modal (popup ยืนยัน ใช้แทน window.confirm) ===== */
+let _confirmCb = null;
+function showConfirm({title, message, okText='ยืนยัน', danger=false, onOk}={}){
+  $('#confirmTitle').textContent = title || 'ยืนยัน';
+  $('#confirmMsg').innerHTML = message || '';
+  const ok = $('#confirmOk');
+  ok.textContent = okText;
+  ok.classList.toggle('danger', !!danger);
+  ok.classList.toggle('primary', !danger);
+  $('#confirmHead').classList.toggle('danger', !!danger);
+  _confirmCb = typeof onOk==='function' ? onOk : null;
+  $('#confirmBg').classList.add('show');
+  ok.focus();
+}
+function closeConfirm(){ $('#confirmBg').classList.remove('show'); _confirmCb=null; }
+$('#confirmCancel').onclick = closeConfirm;
+$('#confirmBg').onclick = e=>{ if(e.target===$('#confirmBg')) closeConfirm(); };
+$('#confirmOk').onclick = ()=>{ const cb=_confirmCb; closeConfirm(); if(cb) cb(); };
+document.addEventListener('keydown', e=>{
+  if(!$('#confirmBg').classList.contains('show')) return;
+  if(e.key==='Escape') closeConfirm();
+  else if(e.key==='Enter'){ const cb=_confirmCb; closeConfirm(); if(cb) cb(); }
+});
+
+/* =========================================================================
+   PDF preview popup — เปิดดูไฟล์ต้นฉบับด้วย pdf.js (เรนเดอร์ในเครื่อง ไม่ส่งออกเน็ต)
+   ดับเบิลคลิกคอลัมน์ "ไฟล์ต้นทาง" → แสดงทุกหน้า ปรับซูมได้ (ปุ่ม / Ctrl+ล้อเมาส์)
+   ========================================================================= */
+let PV = { pdf:null, scale:1.25, token:0 };
+const PV_MIN=0.4, PV_MAX=4, PV_STEP=0.25;
+
+async function openPdfPreview(rec){
+  if(!rec || !rec.file){ toast('warn','ไม่พบไฟล์ต้นฉบับ (อาจเพิ่มแถวเอง/ล้างแล้ว) — เปิดดูไม่ได้'); return; }
+  await workerReady;
+  if(!window.pdfjsLib){ toast('warn','pdf.js ไม่พร้อมใช้งาน เปิดดูไฟล์ไม่ได้'); return; }
+  const myToken = ++PV.token;                       // กันการเปิดซ้อน/แข่งกันเรนเดอร์
+  $('#pvTitle').textContent = rec.fileName;
+  $('#pvPages').innerHTML = '<div class="pv-loading">กำลังเปิดไฟล์…</div>';
+  $('#pvModal').classList.add('show');
+  try{
+    const buf = await rec.file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+    if(myToken!==PV.token) return;                  // ถูกแทนที่ด้วยการเปิดใหม่
+    PV.pdf = pdf; PV.scale = 1.25;
+    await renderPreview();
+  }catch(err){
+    console.error('เปิด PDF ไม่สำเร็จ:', err);
+    if(myToken===PV.token){ $('#pvPages').innerHTML=''; toast('warn','เปิดไฟล์ PDF ไม่สำเร็จ'); closePreview(); }
+  }
+}
+
+async function renderPreview(){
+  if(!PV.pdf) return;
+  const myToken = PV.token;
+  $('#pvZoom').textContent = Math.round(PV.scale*100)+'%';
+  const cont = $('#pvPages'); cont.innerHTML='';
+  for(let p=1; p<=PV.pdf.numPages; p++){
+    const page = await PV.pdf.getPage(p);
+    if(myToken!==PV.token) return;                  // ยกเลิกถ้าปิด/เปิดใหม่ระหว่างเรนเดอร์
+    const vp = page.getViewport({scale:PV.scale});
+    const canvas = document.createElement('canvas');
+    canvas.className='pv-canvas';
+    canvas.width = Math.floor(vp.width); canvas.height = Math.floor(vp.height);
+    cont.appendChild(canvas);
+    await page.render({canvasContext:canvas.getContext('2d'), viewport:vp}).promise;
+    if(myToken!==PV.token) return;
+  }
+}
+
+function setZoom(s){
+  PV.scale = Math.min(PV_MAX, Math.max(PV_MIN, Math.round(s*100)/100));
+  renderPreview();
+}
+function fitWidth(){
+  if(!PV.pdf) return;
+  PV.pdf.getPage(1).then(page=>{
+    const base = page.getViewport({scale:1});
+    const avail = $('#pvBody').clientWidth - 44;   // ลบ padding ซ้ายขวา
+    setZoom(avail / base.width);
+  });
+}
+function closePreview(){
+  PV.token++;            // ยกเลิกงานเรนเดอร์ที่ค้างอยู่
+  PV.pdf = null;
+  $('#pvModal').classList.remove('show');
+  $('#pvPages').innerHTML='';
+}
+
+$('#pvZoomIn').onclick  = ()=> setZoom(PV.scale + PV_STEP);
+$('#pvZoomOut').onclick = ()=> setZoom(PV.scale - PV_STEP);
+$('#pvFit').onclick     = fitWidth;
+$('#pvClose').onclick   = closePreview;
+$('#pvModal').onclick   = e=>{ if(e.target===$('#pvModal') || e.target===$('#pvBody')) closePreview(); };
+$('#pvBody').addEventListener('wheel', e=>{
+  if(!e.ctrlKey) return;                            // Ctrl+ล้อเมาส์ = ซูม
+  e.preventDefault();
+  setZoom(PV.scale + (e.deltaY<0 ? PV_STEP : -PV_STEP));
+}, {passive:false});
+document.addEventListener('keydown', e=>{
+  if(!$('#pvModal').classList.contains('show')) return;
+  if(e.key==='Escape') closePreview();
+  else if(e.key==='+'||e.key==='=') setZoom(PV.scale + PV_STEP);
+  else if(e.key==='-') setZoom(PV.scale - PV_STEP);
+});
+
+/* =========================================================================
+   Export Excel (.xls แบบ HTML) — คอลัมน์ขยายพอดีข้อความอัตโนมัติ + จัดรูปแบบสวยงาม
+   เปิดใน Excel/Sheets ได้เลย: หัวตารางสีกรม · แถบสลับสี · ยอดเงินมีลูกน้ำคั่นหลัก
+   เลขผู้เสียภาษีเป็นรูปแบบ Text (คงเลข 0 นำหน้า) · ความกว้างคำนวณจากข้อความที่ยาวสุด
+   ========================================================================= */
+function buildExcel(){
+  const today = new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  const warn  = RECORDS.filter(r=>r.flags&&r.flags.length).length;
+  const sumI  = RECORDS.reduce((s,r)=>s+(Number(r.income)||0),0);
+  const sumT  = RECORDS.reduce((s,r)=>s+(Number(r.tax)||0),0);
+
+  const cols = [
+    {h:'ลำดับ',                    get:(r,i)=>i+1,                                            align:'center'},
+    {h:'สถานะ',                    get:r=>(r.flags&&r.flags.length)?'⚠ ต้องตรวจ':'✓ ปกติ',     align:'center'},
+    {h:'เลขที่เอกสาร',             get:r=>r.docNo||''},
+    {h:'วันที่',                   get:r=>r.date||'',                                         align:'center'},
+    {h:'ผู้จ่ายเงิน (ผู้หักภาษี)',  get:r=>r.payer||''},
+    {h:'เลขผู้เสียภาษี',           get:r=>r.taxId||'',  text:true, align:'center'},
+    {h:'ผู้ถูกหักภาษี ณ ที่จ่าย',   get:r=>r.payee||''},
+    {h:'ประเภทเงินได้',            get:r=>r.incomeType?(INCOME_TYPES[r.incomeType]||('40('+r.incomeType+')')):''},
+    {h:'ยอดเงิน (บาท)',            get:r=>r.income, num:true, align:'right'},
+    {h:'ภาษีหัก (บาท)',            get:r=>r.tax,    num:true, align:'right'},
+    {h:'ไฟล์ต้นทาง',              get:r=>r.fileName||''},
+  ];
+  const NCOL = cols.length;
+
+  // ----- คำนวณความกว้างคอลัมน์จากข้อความที่ยาวที่สุด (auto-fit) -----
+  const widths = cols.map(c=>{
+    let max = c.h.length;
+    RECORDS.forEach((r,i)=>{
+      let v = c.get(r,i);
+      if(c.num) v = (v==null?'':fmt(v));   // ตัวเลขนับความยาวแบบมีลูกน้ำ
+      const len = String(v==null?'':v).length;
+      if(len>max) max = len;
+    });
+    return Math.max(54, Math.min(340, Math.round(max*8.4)+24));   // จำกัดต่ำสุด/สูงสุด
+  });
+
+  // ----- ตัวช่วยสร้างเซลล์ -----
+  const cell = (val,o={})=>{
+    let st='padding:4px 8px;border:0.5pt solid #cdd9e8;white-space:nowrap;';
+    if(o.align) st+='text-align:'+o.align+';';
+    if(o.bold)  st+='font-weight:bold;';
+    if(o.bg)    st+='background:'+o.bg+';';
+    if(o.color) st+='color:'+o.color+';';
+    if(o.text)  st+="mso-number-format:'\\@';";              // ข้อความ (คงเลข 0 นำหน้า)
+    if(o.num)   st+="mso-number-format:'#\\,##0\\.00';";     // ตัวเลข: ลูกน้ำคั่นหลัก + 2 ทศนิยม
+    const content = o.num ? (val==null?'':String(val)) : esc(val==null?'':String(val));
+    return '<td style="'+st+'">'+content+'</td>';
+  };
+  const metaRow = (label,value)=>
+    '<tr><td colspan="2" style="padding:2px 8px;font-weight:bold;color:#13315c;white-space:nowrap;">'+esc(label)+'</td>'+
+    '<td colspan="'+(NCOL-2)+'" style="padding:2px 8px;color:#41577a;">'+esc(String(value==null?'':value))+'</td></tr>';
+
+  // ----- หัวรายงาน -----
+  let body = '<tr><td colspan="'+NCOL+'" style="font-size:15pt;font-weight:bold;color:#0b2545;padding:6px 8px;">รายงานสรุปหนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ)</td></tr>';
+  body += metaRow('สร้างโดย','TaxFlow Ledger · Flowacc');
+  body += metaRow('วันที่ออกรายงาน', today);
+  body += metaRow('จำนวนเอกสาร', RECORDS.length+' ใบ');
+  body += metaRow('ต้องตรวจสอบ', warn+' ใบ');
+  body += '<tr><td colspan="'+NCOL+'"></td></tr>';   // เว้นบรรทัด
+
+  // ----- หัวตาราง -----
+  body += '<tr>'+cols.map((c,i)=>
+    '<th style="width:'+widths[i]+'px;padding:7px 8px;background:#13315c;color:#ffffff;font-weight:bold;border:0.5pt solid #0b2545;text-align:'+(c.align||'left')+';white-space:nowrap;">'+esc(c.h)+'</th>'
+  ).join('')+'</tr>';
+
+  // ----- ข้อมูล -----
+  RECORDS.forEach((r,i)=>{
+    const bg = (i%2===1)?'#f4f8fc':null;
+    body += '<tr>'+cols.map(c=>{
+      const color = c.h==='สถานะ' ? ((r.flags&&r.flags.length)?'#c0344f':'#2f8a3d') : null;
+      return cell(c.get(r,i),{align:c.align,bg,color,text:c.text,num:c.num,bold:c.h==='สถานะ'});
+    }).join('')+'</tr>';
+  });
+
+  // ----- แถวรวม -----
+  body += '<tr>'+
+    '<td colspan="8" style="padding:7px 8px;text-align:right;font-weight:bold;background:#eef3f9;border:0.5pt solid #cdd9e8;border-top:1.5pt solid #13315c;">รวมทั้งสิ้น ('+RECORDS.length+' ใบ)</td>'+
+    cell(sumI,{num:true,align:'right',bold:true,bg:'#eef3f9'})+
+    cell(sumT,{num:true,align:'right',bold:true,bg:'#eef3f9'})+
+    '<td style="background:#eef3f9;border:0.5pt solid #cdd9e8;border-top:1.5pt solid #13315c;"></td>'+
+    '</tr>';
+
+  const colgroup = '<colgroup>'+widths.map(w=>'<col style="width:'+w+'px"/>').join('')+'</colgroup>';
+  const doc =
+    '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">'+
+    '<head><meta charset="utf-8"/>'+
+    '<style>table{border-collapse:collapse;font-family:Tahoma,\'TH Sarabun New\',sans-serif;font-size:11pt;} td,th{mso-data-placement:same-cell;}</style></head>'+
+    '<body><table border="0" cellspacing="0">'+colgroup+body+'</table></body></html>';
+  return '﻿'+doc;
+}
+function exportFileName(){
+  const d=new Date(); const p=n=>String(n).padStart(2,'0');
+  return `taxflow_ledger_50tawi_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}.xls`;
+}
+$('#csvBtn').onclick = ()=>{
+  if(!RECORDS.length) return;
+  const blob=new Blob([buildExcel()],{type:'application/vnd.ms-excel;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=exportFileName();
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  toast('ok','ดาวน์โหลดไฟล์ Excel แล้ว');
+};
+
+/* =========================================================================
+   Export PDF สรุป A4 หน้าเดียว (window.print + @media print)
+   ========================================================================= */
+function buildPrintSheet(){
+  const sumI=RECORDS.reduce((s,r)=>s+(Number(r.income)||0),0);
+  const sumT=RECORDS.reduce((s,r)=>s+(Number(r.tax)||0),0);
+  const warn=RECORDS.filter(r=>r.flags&&r.flags.length).length;
+  const today=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  const rowsHtml = RECORDS.map((r,i)=>`
+    <tr>
+      <td style="text-align:center;">${i+1}</td>
+      <td>${esc(r.docNo)||'-'}</td>
+      <td>${esc(r.date)||'-'}</td>
+      <td>${esc(r.payer)||'-'}</td>
+      <td>${esc(r.taxId)||'-'}</td>
+      <td>${esc(r.payee)||'-'}</td>
+      <td>${r.incomeType?esc(INCOME_TYPES[r.incomeType]||('40('+r.incomeType+')')):'-'}</td>
+      <td class="num">${r.income!=null?fmt(r.income):'-'}</td>
+      <td class="num">${r.tax!=null?fmt(r.tax):'-'}</td>
+    </tr>`).join('');
+  // เลือกระดับความหนาแน่นให้พอดี 1 หน้า A4 แนวนอน ตามจำนวนแถว (แนวนอนสูงน้อยกว่า → ลดเกณฑ์ลง)
+  const n = RECORDS.length;
+  const dens = n<=15 ? '' : n<=22 ? 'd1' : n<=30 ? 'd2' : n<=40 ? 'd3' : 'd4';
+  const sheet = $('#printSheet');
+  sheet.className = dens;
+  // ===== safety net: ถ้าประมาณการความสูงยังเกิน 1 หน้า → ใช้ zoom ย่อทั้งใบ (Chrome reflow จริง ไม่เกิดหน้าเปล่า) =====
+  // เผื่อกรณีรายการเยอะที่ tier เล็กสุดก็ยังไม่พอ — รับประกัน 1 หน้า A4 ทุกกรณี
+  const PXMM = 96/25.4;
+  const usablePx = (210-10-10)*PXMM;                 // ความสูงพื้นที่พิมพ์ A4 landscape
+  const TV = {'':[5,10,42,34,14,10], d1:[3.4,8.6,26,26,11,8], d2:[2.6,7.7,20,22,9,6], d3:[2,7,15,18,8,5], d4:[1.4,6.3,11,14,6,4]}[dens];
+  const [rpad,rfs,sgap,sline,hmb,tmb] = TV;
+  const rowH = rpad*2 + rfs*1.4 + 1;
+  const estPx = (38+10+hmb) + (13*1.4+tmb) + ((rpad+1)*2+rfs*1.4) + n*rowH + rowH + (sgap+sline+5+10*1.4) + (14+7+8.5*1.4);
+  sheet.style.zoom = estPx > usablePx ? Math.max(0.4, (usablePx/estPx)*0.98) : 1;
+  sheet.innerHTML = `
+    <div class="ps-head">
+      <div class="ps-brand">
+        <div class="ps-logo">TF</div>
+        <div class="ps-co">
+          <h2>${esc(REPORT_BRAND)}</h2>
+          <p>สรุปหนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ) · Flowacc</p>
+        </div>
+      </div>
+      <div class="ps-meta">
+        <b>รายงานสรุป</b><br/>
+        วันที่ออกรายงาน: ${esc(today)}<br/>
+        จำนวนเอกสาร: ${RECORDS.length} ใบ${warn?` · ต้องตรวจ ${warn} ใบ`:''}
+      </div>
+    </div>
+    <h3 class="ps-title">สรุปรายการภาษีหัก ณ ที่จ่าย (หนังสือรับรอง 50 ทวิ)</h3>
+    <table class="ps-table">
+      <thead><tr>
+        <th style="width:30px;text-align:center;">#</th>
+        <th style="width:118px;">เลขที่เอกสาร</th>
+        <th style="width:74px;">วันที่</th>
+        <th style="width:30%;">ผู้จ่ายเงิน (ผู้หักภาษี)</th>
+        <th style="width:118px;">เลขผู้เสียภาษี</th>
+        <th style="width:22%;">ผู้ถูกหักภาษี ณ ที่จ่าย</th>
+        <th style="width:118px;">ประเภทเงินได้</th>
+        <th class="num" style="width:120px;">ยอดเงิน</th>
+        <th class="num" style="width:112px;">ภาษีหัก</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+      <tfoot><tr>
+        <td colspan="7" style="text-align:right;">รวมทั้งสิ้น</td>
+        <td class="num">${fmt(sumI)}</td>
+        <td class="num">${fmt(sumT)}</td>
+      </tr></tfoot>
+    </table>
+    <div class="ps-sign">
+      <div><div class="line">ผู้จัดทำ / วันที่</div></div>
+      <div><div class="line">ผู้ตรวจสอบ / วันที่</div></div>
+      <div><div class="line">ผู้อนุมัติ / วันที่</div></div>
+    </div>
+    <div class="ps-foot">เอกสารนี้สร้างจาก TaxFlow Ledger — ประมวลผลในเครื่อง ข้อมูลไม่ถูกส่งออกสู่อินเทอร์เน็ต · โปรดตรวจทานกับต้นฉบับก่อนยื่นจริง</div>`;
+}
+$('#pdfBtn').onclick = ()=>{
+  if(!RECORDS.length) return;
+  buildPrintSheet();
+  window.print();
+};
+
+/* ล้างทั้งหมด */
+$('#clearBtn').onclick = ()=>{
+  if(!RECORDS.length) return;
+  showConfirm({
+    title:'ล้างข้อมูลทั้งหมด?',
+    message:`จะลบรายการทั้งหมด <b>${RECORDS.length}</b> รายการออกจากสมุด — การกระทำนี้ย้อนกลับไม่ได้`,
+    okText:'ล้างทั้งหมด', danger:true,
+    onOk:()=>{
+      RECORDS=[]; SEARCH=''; $('#searchInput').value='';
+      INCOMPLETE_ONLY=false; $('#filterIncompleteBtn').classList.remove('on');
+      SORT={key:null,dir:1};
+      renderAll(); toast('ok','ล้างข้อมูลแล้ว');
+    }
+  });
+};
+
+/* ===== Toast ===== */
+function toast(type,msg){
+  const t=document.createElement('div'); t.className='toast '+(type||'');
+  const ico = type==='warn'
+    ? '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v4M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  t.innerHTML=ico+'<span>'+esc(msg)+'</span>';
+  $('#toastWrap').appendChild(t);
+  setTimeout(()=>{ t.style.transition='.3s'; t.style.opacity='0'; t.style.transform='translateX(20px)'; setTimeout(()=>t.remove(),300); },3200);
+}
+
+/* ===== Drag & drop + เลือกไฟล์ ===== */
+const dz=$('#dropzone');
+$('#pickBtn').onclick=e=>{ e.stopPropagation(); $('#fileInput').click(); };
+dz.onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=e=>{ handleFiles(e.target.files); e.target.value=''; };
+['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag');}));
+dz.addEventListener('drop',e=>{ const f=e.dataTransfer.files; if(f&&f.length) handleFiles(f); });
+window.addEventListener('dragover',e=>e.preventDefault());
+window.addEventListener('drop',e=>e.preventDefault());
+
+/* เปิดหน้ามาเป็นตารางว่างพร้อม empty state — ไม่มีข้อมูลจำลอง ลากไฟล์ 50 ทวิ จริงเข้ามาเพื่อเริ่ม */
+renderAll();
+</script>
+</body>
+</html>
