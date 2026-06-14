@@ -275,6 +275,108 @@
   .footer-note{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.6;}
   .hidden{display:none!important;}
 
+  /* ===== Responsive — รองรับแท็บเล็ต/มือถือ ===== */
+  @media (max-width:768px){
+    .wrap{padding:0 14px;}
+    header.app{padding:12px 0;}
+    .head-row{gap:10px;}
+    .brand h1{font-size:18px;}
+    .brand p{font-size:11px;}
+    .privacy-pill{font-size:11px;padding:5px 10px;}
+    main{padding:var(--s4) 0 64px;}
+
+    /* dropzone จัดเป็นแนวตั้ง กดง่ายบนจอเล็ก */
+    .dropzone{flex-direction:column;text-align:center;gap:10px;padding:16px;}
+    .drop-txt h3{font-size:15px;}
+    .drop-txt p{font-size:12px;}
+    .btn-pick{width:100%;justify-content:center;}
+
+    /* toolbar: ชื่อ+ช่องค้นหาเต็มแถว ปุ่มไหลลงบรรทัดถัดไปและกดง่าย */
+    .toolbar{gap:8px;}
+    .toolbar h2{font-size:16px;flex:1 1 100%;}
+    .tb-spacer{display:none;}
+    .search{flex:1 1 100%;}
+    .search input{width:100%;}
+    .btn{flex:1 1 auto;justify-content:center;}
+
+    /* ตารางกว้างกว่าจอ → เลื่อนแนวนอนได้ (กันบีบตัวอักษรจนอ่านไม่ออก) */
+    .table-scroll{max-height:none;-webkit-overflow-scrolling:touch;}
+  }
+
+  @media (max-width:480px){
+    .stats{gap:10px;}
+    .stat{padding:12px;}
+    .stat .val{font-size:20px;}
+    .privacy-pill{font-size:10.5px;}
+
+    /* popup ดู PDF: หัวเครื่องมือไม่ให้ล้นจอ */
+    .pv-head{flex-wrap:wrap;gap:8px;}
+    .pv-name{flex:1 1 100%;}
+    .pv-ctrl{flex-wrap:wrap;justify-content:flex-end;width:100%;}
+    .pv-body{padding:12px;}
+
+    /* modal: ลดระยะขอบให้ใช้พื้นที่จอเล็กเต็มขึ้น */
+    .modal-bg{padding:12px;}
+  }
+
+  /* ===== มือถือ: เปลี่ยนตารางเป็น "การ์ด" (1 เอกสาร = 1 การ์ด) ไม่ต้องเลื่อนซ้าย-ขวา ===== */
+  @media (max-width:680px){
+    .table-card{background:transparent;border:none;box-shadow:none;}
+    .table-scroll{overflow:visible;max-height:none;}
+    #resultTable{min-width:0;width:100%;table-layout:auto;font-size:14px;}
+    #resultTable thead{display:none;}                 /* หัวตารางไม่ต้องใช้ — ใช้ป้ายในแต่ละช่องแทน */
+    #resultTable tbody,#resultTable tr,#resultTable td{display:block;width:auto;}
+
+    /* แต่ละแถว = การ์ด มีหัวการ์ดสำหรับสถานะ (ซ้าย) + ปุ่มลบ (ขวา) */
+    #tbody tr{
+      position:relative;background:var(--surface)!important;
+      border:1px solid var(--line-strong);border-radius:14px;
+      box-shadow:var(--shadow-sm);margin:0 0 14px;padding:40px 14px 8px;
+    }
+    #tbody td{border-bottom:1px dashed var(--line);padding:8px 0;white-space:normal;}
+    #tbody td.idx{display:none;}                       /* ลำดับไม่จำเป็นบนการ์ด */
+    #tbody td:first-child{                              /* สถานะ → มุมซ้ายบนของการ์ด */
+      position:absolute;left:14px;top:11px;width:auto;padding:0;border:none;
+    }
+    #tbody td:last-child{                              /* ปุ่มลบ → มุมขวาบนของการ์ด */
+      position:absolute;right:8px;top:6px;width:auto;padding:0;border:none;
+    }
+
+    /* ช่องข้อมูลที่มีป้าย: ป้ายซ้าย-ค่าขวา */
+    #tbody td[data-label]{display:flex;align-items:center;gap:12px;justify-content:space-between;}
+    #tbody td[data-label]:last-of-type{border-bottom:none;}
+    #tbody td[data-label]::before{
+      content:attr(data-label);flex:0 0 38%;
+      font-size:12px;font-weight:600;color:var(--muted);line-height:1.3;
+    }
+    #tbody td .cell{
+      flex:1;text-align:right;white-space:normal;word-break:break-word;
+      margin:0;padding:4px 6px;overflow:visible;text-overflow:clip;
+    }
+    #tbody td.num .cell{text-align:right;}
+    #tbody td .badge-sel{width:auto;flex:1;max-width:62%;}
+    #tbody td.miss{box-shadow:none;background:transparent!important;}
+    #tbody td.miss .cell{background:var(--amber-50);box-shadow:inset 0 0 0 1px var(--amber-500);border-radius:6px;}
+    #tbody td.miss::before{color:var(--amber-600);}
+    .btn-detail{padding:7px 14px;}                      /* ปุ่มรายละเอียดกดง่ายขึ้น */
+    .del-row svg{width:18px;height:18px;}
+
+    /* แถวรวมท้ายตาราง → การ์ดสรุป */
+    #resultTable tfoot{display:block;}
+    #resultTable tfoot tr{
+      display:block;background:var(--surface-2);border:2px solid var(--line-strong);
+      border-radius:14px;padding:8px 14px;
+    }
+    #resultTable tfoot td{
+      display:flex;justify-content:space-between;align-items:center;
+      position:static;border:none;padding:5px 0;font-size:14px;
+    }
+    #resultTable tfoot td[colspan="8"]{justify-content:center;border-bottom:1px solid var(--line);margin-bottom:4px;padding-bottom:7px;}
+    #resultTable tfoot td[colspan="2"]{display:none;}
+    #resultTable tfoot td#footIncome::before{content:"รวมยอดเงิน";font-weight:600;color:var(--muted);}
+    #resultTable tfoot td#footTax::before{content:"รวมภาษีหัก";font-weight:600;color:var(--muted);}
+  }
+
   /* ===== Print sheet (A4 landscape — บังคับพอดี 1 หน้าทุกกรณี) =====
      ความหนาแน่นปรับอัตโนมัติด้วย density class (.d0–.d4) ที่เซ็ตจาก JS ตามจำนวนแถว
      ขับทุกขนาดผ่านตัวแปร --rpad / --rfs / --sgap เพื่อย่อแถว+ระยะลงเมื่อรายการเยอะ */
@@ -843,17 +945,17 @@ function renderAll(){
         ? `<button class="row-flag" title="ดูสิ่งที่ต้องตรวจ" data-flag="${r.uid}"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3z" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round" fill="#fff6e9"/><path d="M12 9v4M12 16h.01" stroke="#d97706" stroke-width="1.8" stroke-linecap="round"/></svg></button>`
         : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"><circle cx="12" cy="12" r="9" stroke="#16a34a" stroke-width="1.6"/><path d="M8.5 12.5l2.5 2.5 4.5-5" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`}</td>
       <td class="idx">${i+1}</td>
-      <td class="${md('docNo')}"><div class="cell mono" contenteditable="true" data-f="docNo">${esc(r.docNo)}</div></td>
-      <td class="${md('date')}"><div class="cell mono" contenteditable="true" data-f="date">${esc(r.date)}</div></td>
-      <td class="${md('payer')}"><div class="cell" contenteditable="true" data-f="payer" title="${esc(r.payer)}">${esc(r.payer)}</div></td>
-      <td class="${md('taxId')}"><div class="cell tax-id-cell mono" contenteditable="true" data-f="taxId">${esc(r.taxId)}</div></td>
-      <td class="${md('payee')}"><div class="cell" contenteditable="true" data-f="payee" title="${esc(r.payee)}">${esc(r.payee)}</div></td>
-      <td class="${md('incomeType')}">
+      <td class="${md('docNo')}" data-label="เลขที่เอกสาร"><div class="cell mono" contenteditable="true" data-f="docNo">${esc(r.docNo)}</div></td>
+      <td class="${md('date')}" data-label="วันที่"><div class="cell mono" contenteditable="true" data-f="date">${esc(r.date)}</div></td>
+      <td class="${md('payer')}" data-label="ผู้จ่ายเงิน (ผู้หักภาษี)"><div class="cell" contenteditable="true" data-f="payer" title="${esc(r.payer)}">${esc(r.payer)}</div></td>
+      <td class="${md('taxId')}" data-label="เลขผู้เสียภาษี"><div class="cell tax-id-cell mono" contenteditable="true" data-f="taxId">${esc(r.taxId)}</div></td>
+      <td class="${md('payee')}" data-label="ผู้ถูกหักภาษี ณ ที่จ่าย"><div class="cell" contenteditable="true" data-f="payee" title="${esc(r.payee)}">${esc(r.payee)}</div></td>
+      <td class="${md('incomeType')}" data-label="ประเภทเงินได้">
         <select class="badge-sel ty-${ty}" data-f="incomeType">${typeOptions(ty)}</select>
       </td>
-      <td class="num ${md('income')}"><div class="cell mono" contenteditable="true" data-f="income">${r.income!=null?fmt(r.income):''}</div></td>
-      <td class="num ${md('tax')}"><div class="cell mono" contenteditable="true" data-f="tax">${r.tax!=null?fmt(r.tax):''}</div></td>
-      <td style="text-align:center;">${r.file
+      <td class="num ${md('income')}" data-label="ยอดเงิน"><div class="cell mono" contenteditable="true" data-f="income">${r.income!=null?fmt(r.income):''}</div></td>
+      <td class="num ${md('tax')}" data-label="ภาษีหัก"><div class="cell mono" contenteditable="true" data-f="tax">${r.tax!=null?fmt(r.tax):''}</div></td>
+      <td style="text-align:center;" data-label="ไฟล์ต้นทาง">${r.file
         ? `<button class="btn-detail" data-preview="${r.uid}" title="${esc(r.fileName)}"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h7l5 5v13H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 3v5h5" stroke="currentColor" stroke-width="1.6"/></svg>รายละเอียด</button>`
         : `<span class="src-file" title="${esc(r.fileName)}"><span>${esc(r.fileName)||'—'}</span></span>`}</td>
       <td style="text-align:center;"><button class="del-row" title="ลบแถวนี้" data-del="${r.uid}"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2m-8 0v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></td>`;
